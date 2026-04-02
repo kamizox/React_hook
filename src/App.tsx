@@ -1,5 +1,5 @@
 import './App.css'
-import { useFetchProducts } from './useFetchProducts.js'
+import { useFetchProducts } from './useFetchProducts'
 
 function App() {
   const { products, loading, error } = useFetchProducts()
@@ -29,11 +29,7 @@ function App() {
         {products.map((item) => (
           <article className="product-card" key={item.id}>
             <div className="product-card__media">
-              <img
-                src={item.thumbnail}
-                alt=""
-                loading="lazy"
-              />
+              <img src={item.thumbnail} alt="" loading="lazy" />
             </div>
             <div className="product-card__body">
               <h2 className="product-card__title">{item.title}</h2>
