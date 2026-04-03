@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 
 interface Product {
@@ -15,23 +14,41 @@ export function useFetchProducts() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    axios
-      .get('https://dummyjson.com/products')
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+    fetch('https://dummyjson.com/products', {
+      signal: controller.signal
+    })
       .then((response) => {
-        setProducts(response.data.products ?? [])
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
+      .then((data) => {
+        setProducts(data.products ?? [])
         setError(null)
       })
       .catch((err) => {
         setProducts([])
-        setError(
-          err.response?.data?.message ??
-            err.message ??
-            'Something went wrong. Please try again.'
-        )
+        if (err.name === 'AbortError') {
+          setError('Request timed out. Please try again.')
+        } else {
+          setError(
+            err.message ?? 'Something went wrong. Please try again.'
+          )
+        }
       })
       .finally(() => {
+        clearTimeout(timeoutId)
         setLoading(false)
       })
+
+    return () => {
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
   }, [])
 
   return { products, loading, error }
